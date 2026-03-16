@@ -11,6 +11,21 @@ Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
 
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('reset-password', [AuthController::class, 'resetPassword']);
+
+    Route::get('auth/reset-password/{token}', function (Request $request, string $token) {
+        return response()->json([
+            'success' => true,
+            'code'    => 200,
+            'message' => 'Token valid',
+            'data'    => [
+                'token' => $token,
+                'email' => $request->query('email'),
+            ],
+        ]);
+    })->name('password.reset');
+
     // Email verification 
     Route::get('verify-email/{id}/{hash}', function (Request $request, $id, $hash) {
         $user = User::findOrFail($id);

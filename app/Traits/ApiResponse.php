@@ -14,9 +14,10 @@ trait ApiResponse
         ], $code);
     }
 
-    protected function retrieved($data = null)
+    protected function retrieved($data = null, string $message = null)
     {
-        return $this->response(true, 200, "{$this->resourceName} retrieved successfully", $data);
+        $message = $message ?? "{$this->resourceName} retrieved successfully";
+        return $this->response(true, 200, $message, $data);
     }
 
     protected function created($data = null, string $message = null)

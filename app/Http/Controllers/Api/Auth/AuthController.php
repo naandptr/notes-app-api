@@ -7,6 +7,9 @@ use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -33,7 +36,6 @@ class AuthController extends Controller
 
         return $this->created(null, 'Registration successful. Please check your email to verify your account.');
     }
-
     public function login(Request $request)
     {
         $request->validate([
@@ -71,7 +73,55 @@ class AuthController extends Controller
             'user'       => $user,
         ]);
     }
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
 
+        $status = Password::sendResetLink($request->only('email'));
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return $this->retrieved(null, 'Password reset link sent to your email');
+        }
+
+        return $this->badRequest(__($status));
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token'    => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $record = \DB::table('password_reset_tokens')->get()->first(function ($item) use ($request) {
+            return \Hash::check($request->token, $item->token);
+        });
+
+        if (!$record) {
+            return $this->badRequest('Invalid or expired reset token');
+        }
+
+        $request->merge(['email' => $record->email]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                ])->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return $this->retrieved(null, 'Password reset successfully');
+        }
+
+        return $this->badRequest(__($status));
+    }
     public function logout()
     {
         auth('api')->logout();
