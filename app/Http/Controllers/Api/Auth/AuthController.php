@@ -11,11 +11,54 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 
+/**
+ * @OA\Info(
+ *     title="Notes App API",
+ *     version="1.0.0",
+ *     description="API documentation for Notes App"
+ * )
+ * @OA\SecurityScheme(
+ *     securityScheme="bearerAuth",
+ *     type="http",
+ *     scheme="bearer",
+ *     bearerFormat="JWT"
+ * )
+ */
+
 class AuthController extends Controller
 {
     use ApiResponse;
 
     protected string $resourceName = 'User';
+
+    /**
+     * @OA\Post(
+     *     path="/api/auth/register",
+     *     tags={"Auth"},
+     *     summary="Register user baru",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name","email","password","password_confirmation"},
+     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *             @OA\Property(property="email", type="string", example="john@example.com"),
+     *             @OA\Property(property="password", type="string", example="password123"),
+     *             @OA\Property(property="password_confirmation", type="string", example="password123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Registration successful",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="code", type="integer", example=201),
+     *             @OA\Property(property="message", type="string", example="Registration successful. Please check your email to verify your account."),
+     *             @OA\Property(property="data", type="null")
+     *         )
+     *     ),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
 
     public function register(Request $request)
     {
@@ -36,6 +79,39 @@ class AuthController extends Controller
 
         return $this->created(null, 'Registration successful. Please check your email to verify your account.');
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/auth/login",
+     *     tags={"Auth"},
+     *     summary="Login manual",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email","password"},
+     *             @OA\Property(property="email", type="string", example="john@example.com"),
+     *             @OA\Property(property="password", type="string", example="password123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login successful",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="User retrieved successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="token", type="string", example="eyJ0eXAiOiJKV1Qi..."),
+     *                 @OA\Property(property="type", type="string", example="bearer"),
+     *                 @OA\Property(property="expires_in", type="integer", example=3600),
+     *                 @OA\Property(property="user", type="object")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Invalid credentials"),
+     *     @OA\Response(response=403, description="Email not verified")
+     * )
+     */
     public function login(Request $request)
     {
         $request->validate([
@@ -73,6 +149,24 @@ class AuthController extends Controller
             'user'       => $user,
         ]);
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/auth/forgot-password",
+     *     tags={"Auth"},
+     *     summary="Kirim link reset password",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", example="john@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Reset link sent"),
+     *     @OA\Response(response=400, description="Email not found"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function forgotPassword(Request $request)
     {
         $request->validate([
@@ -88,6 +182,25 @@ class AuthController extends Controller
         return $this->badRequest(__($status));
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/auth/reset-password",
+     *     tags={"Auth"},
+     *     summary="Reset password",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"token","password","password_confirmation"},
+     *             @OA\Property(property="token", type="string", example="abc123..."),
+     *             @OA\Property(property="password", type="string", example="newpassword123"),
+     *             @OA\Property(property="password_confirmation", type="string", example="newpassword123")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Password reset successfully"),
+     *     @OA\Response(response=400, description="Invalid or expired token"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function resetPassword(Request $request)
     {
         $request->validate([
@@ -122,6 +235,17 @@ class AuthController extends Controller
 
         return $this->badRequest(__($status));
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/auth/logout",
+     *     tags={"Auth"},
+     *     summary="Logout",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Logged out successfully"),
+     *     @OA\Response(response=401, description="Unauthenticated")
+     * )
+     */
     public function logout()
     {
         auth('api')->logout();
