@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
+use PHPUnit\Framework\Attributes\Test;
 use Mockery;
 use Tests\TestCase;
 
@@ -36,7 +37,7 @@ class GoogleAuthTest extends TestCase
             ->andReturn($provider);
     }
 
-    /** @test */
+    #[Test]
     public function it_registers_new_user_via_google()
     {
         $googleUser = $this->mockGoogleUser();
@@ -59,7 +60,7 @@ class GoogleAuthTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_in_existing_user_via_google()
     {
         // Create an existing user
@@ -80,7 +81,7 @@ class GoogleAuthTest extends TestCase
         $this->assertDatabaseCount('users', 1);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_google_id_if_user_registered_with_email()
     {
         // User registers manually, doesn't have a google_id yet
@@ -102,7 +103,7 @@ class GoogleAuthTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_error_when_google_auth_fails()
     {
         $provider = Mockery::mock(\Laravel\Socialite\Two\GoogleProvider::class);

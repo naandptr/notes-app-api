@@ -46,7 +46,9 @@ Route::prefix('auth')->group(function () {
             ]);
         }
 
-        $user->markEmailAsVerified();
+        if ($user->markEmailAsVerified()) {
+            event(new \Illuminate\Auth\Events\Verified($user));
+        }
 
         return response()->json([
             'success' => true,

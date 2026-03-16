@@ -5,13 +5,14 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_registers_a_new_user_successfully()
     {
         $response = $this->postJson('/api/auth/register', [
@@ -34,7 +35,7 @@ class AuthTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_register_with_duplicate_email()
     {
         User::factory()->create(['email' => 'test@example.com']);
@@ -49,7 +50,7 @@ class AuthTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_register_with_mismatched_password()
     {
         $response = $this->postJson('/api/auth/register', [
@@ -62,7 +63,7 @@ class AuthTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_register_with_missing_fields()
     {
         $response = $this->postJson('/api/auth/register', []);
@@ -70,7 +71,7 @@ class AuthTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_in_successfully_with_correct_credentials()
     {
         User::factory()->create([
@@ -94,7 +95,7 @@ class AuthTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_login_with_wrong_password()
     {
         User::factory()->create([
@@ -112,7 +113,7 @@ class AuthTest extends TestCase
             ->assertJsonPath('message', 'Invalid email or password');
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_login_with_unregistered_email()
     {
         $response = $this->postJson('/api/auth/login', [
@@ -123,7 +124,7 @@ class AuthTest extends TestCase
         $response->assertStatus(401);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_login_if_email_not_verified()
     {
         User::factory()->create([
@@ -142,8 +143,7 @@ class AuthTest extends TestCase
             ->assertJsonPath('message', 'Please verify your email first');
     }
 
-
-    /** @test */
+    #[Test]
     public function it_logs_out_successfully()
     {
         $user = User::factory()->create([
@@ -162,7 +162,7 @@ class AuthTest extends TestCase
             ->assertJsonPath('message', 'Logged out successfully');
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_logout_without_token()
     {
         $response = $this->postJson('/api/auth/logout');
