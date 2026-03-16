@@ -49,6 +49,7 @@ class GoogleAuthController extends Controller
                     'google_id' => $googleUser->getId(),
                     'avatar'    => $googleUser->getAvatar(),
                     'password'  => null,
+                    'email_verified_at' => now(), // immediately verify email since it's from Google
                 ]);
             }
 
@@ -64,7 +65,7 @@ class GoogleAuthController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Google authentication gagal',
+                'message' => 'Google authentication failed',
                 'error'   => $e->getMessage(),
             ], 500);
         }

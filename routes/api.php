@@ -3,11 +3,78 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\GoogleAuthController;
+use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\NoteController;
+use App\Models\User;
 
-Route::prefix('auth/google')->group(function () {
-    Route::get('redirect', [GoogleAuthController::class, 'redirectToGoogle']);
-    Route::get('callback', [GoogleAuthController::class, 'handleGoogleCallback']);
+Route::prefix('auth')->group(function () {
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+
+    // Email verification 
+    Route::get('verify-email/{id}/{hash}', function (Request $request, $id, $hash) {
+        $user = User::findOrFail($id);
+
+        if (!hash_equals((string) $hash, sha1($user->email))) {
+            return response()->json([
+                'success' => false,
+                'code'    => 403,
+                'message' => 'Invalid verification link'
+            ], 403);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json([
+                'success' => true,
+                'code'    => 200,
+                'message' => 'Email already verified'
+            ]);
+        }
+
+        $user->markEmailAsVerified();
+
+        return response()->json([
+            'success' => true,
+            'code'    => 200,
+            'message' => 'Email verified successfully'
+        ]);
+    })->middleware('signed')->name('verification.verify');
+
+    // Resend email verification link
+    Route::post('resend-verification', function (Request $request) {
+        $request->validate(['email' => 'required|email']);
+        
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'code'    => 404,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json([
+                'success' => true,
+                'code'    => 200,
+                'message' => 'Email already verified'
+            ]);
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return response()->json([
+            'success' => true,
+            'code'    => 200,
+            'message' => 'Verification email resent'
+        ]);
+    })->middleware('throttle:6,1');
+
+    Route::prefix('google')->group(function () {
+        Route::get('redirect', [GoogleAuthController::class, 'redirectToGoogle']);
+        Route::get('callback', [GoogleAuthController::class, 'handleGoogleCallback']);
+    });
 });
 
 if (app()->environment('local')) {
@@ -31,17 +98,8 @@ Route::middleware('auth:api')->group(function () {
         return response()->json(auth('api')->user());
     });
 
-    Route::post('/logout', function () {
-        auth('api')->logout();
-        return response()->json(['success' => true, 'message' => 'Logged out successfully']);
-    });
-
-    Route::post('/refresh', function () {
-        return response()->json([
-            'token' => auth('api')->refresh(),
-            'type'  => 'bearer',
-        ]);
-    });
+    Route::post('auth/logout', [AuthController::class, 'logout']);
+    Route::post('auth/refresh', [AuthController::class, 'refresh']);
 
     Route::apiResource('notes', NoteController::class);
 });

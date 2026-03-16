@@ -19,9 +19,10 @@ trait ApiResponse
         return $this->response(true, 200, "{$this->resourceName} retrieved successfully", $data);
     }
 
-    protected function created($data = null)
+    protected function created($data = null, string $message = null)
     {
-        return $this->response(true, 201, "{$this->resourceName} created successfully", $data);
+        $message = $message ?? "{$this->resourceName} created successfully";
+        return $this->response(true, 201, $message, $data);
     }
 
     protected function updated($data = null)
@@ -32,6 +33,11 @@ trait ApiResponse
     protected function deleted()
     {
         return $this->response(true, 200, "{$this->resourceName} deleted successfully");
+    }
+
+    protected function loggedOut()
+    {
+        return $this->response(true, 200, 'Logged out successfully');
     }
 
     // 4xx Client Error
