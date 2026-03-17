@@ -19,13 +19,6 @@ class NoteController extends Controller
      *     tags={"Notes"},
      *     summary="Get semua notes milik user",
      *     security={{"bearerAuth":{}}},
-     *     * @OA\Parameter(
-     *         name="search",
-     *         in="query",
-     *         required=false,
-     *         description="Cari notes berdasarkan judul atau konten",
-     *         @OA\Schema(type="string", example="laravel")
-     *     ),
      *     @OA\Parameter(
      *         name="page",
      *         in="query",
@@ -39,6 +32,20 @@ class NoteController extends Controller
      *         required=false,
      *         description="Jumlah data per halaman (default: 10)",
      *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         required=false,
+     *         description="Cari notes berdasarkan judul atau konten",
+     *         @OA\Schema(type="string", example="laravel")
+     *     ),
+     *     @OA\Parameter(
+     *         name="tag_id",
+     *         in="query",
+     *         required=false,
+     *         description="Filter notes berdasarkan tag",
+     *         @OA\Schema(type="string", example="019cf4d0-c324-7067-85dd-cfa8e926d8d2")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -59,8 +66,6 @@ class NoteController extends Controller
      *     @OA\Response(response=401, description="Unauthenticated")
      * )
      */
-
-
     public function index(Request $request)
     {
         $notes = Note::where('created_by', auth()->id())
@@ -91,15 +96,31 @@ class NoteController extends Controller
      *         @OA\JsonContent(
      *             required={"note_title","note_content"},
      *             @OA\Property(property="note_title", type="string", example="Judul Note"),
-     *             @OA\Property(property="note_content", type="string", example="Isi note disini")
+     *             @OA\Property(property="note_content", type="string", example="Isi note disini"),
+     *             @OA\Property(property="tag_ids", type="array",
+     *                 @OA\Items(type="string", example="019cf4d0-c324-7067-85dd-cfa8e926d8d2")
+     *             )
      *         )
      *     ),
-     *     @OA\Response(response=201, description="Note created successfully"),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Note created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="code", type="integer", example=201),
+     *             @OA\Property(property="message", type="string", example="Note created successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="string", example="019cf4d0-c324-7067-85dd-cfa8e926d8d2"),
+     *                 @OA\Property(property="note_title", type="string", example="Judul Note"),
+     *                 @OA\Property(property="note_content", type="string", example="Isi note disini"),
+     *                 @OA\Property(property="tags", type="array", @OA\Items(type="object"))
+     *             )
+     *         )
+     *     ),
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-
     public function store(Request $request)
     {
         $request->validate([
@@ -139,8 +160,6 @@ class NoteController extends Controller
      *     @OA\Response(response=404, description="Not found")
      * )
      */
-
-
     public function show(Note $note)
     {
         if ($note->created_by !== auth()->id()) {
@@ -165,7 +184,10 @@ class NoteController extends Controller
      *     @OA\RequestBody(
      *         @OA\JsonContent(
      *             @OA\Property(property="note_title", type="string", example="Updated Title"),
-     *             @OA\Property(property="note_content", type="string", example="Updated Content")
+     *             @OA\Property(property="note_content", type="string", example="Updated Content"),
+     *             @OA\Property(property="tag_ids", type="array",
+     *                 @OA\Items(type="string", example="019cf4d0-c324-7067-85dd-cfa8e926d8d2")
+     *             )
      *         )
      *     ),
      *     @OA\Response(response=200, description="Note updated successfully"),

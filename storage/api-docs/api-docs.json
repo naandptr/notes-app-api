@@ -395,16 +395,6 @@
                 "operationId": "bae18c4794ae9fa2869bd2d6172e8bc1",
                 "parameters": [
                     {
-                        "name": "search",
-                        "in": "query",
-                        "description": "Cari notes berdasarkan judul atau konten",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "laravel"
-                        }
-                    },
-                    {
                         "name": "page",
                         "in": "query",
                         "description": "Halaman yang ditampilkan",
@@ -422,6 +412,26 @@
                         "schema": {
                             "type": "integer",
                             "example": 10
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Cari notes berdasarkan judul atau konten",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "laravel"
+                        }
+                    },
+                    {
+                        "name": "tag_id",
+                        "in": "query",
+                        "description": "Filter notes berdasarkan tag",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "019cf4d0-c324-7067-85dd-cfa8e926d8d2"
                         }
                     }
                 ],
@@ -510,6 +520,13 @@
                                     "note_content": {
                                         "type": "string",
                                         "example": "Isi note disini"
+                                    },
+                                    "tag_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "019cf4d0-c324-7067-85dd-cfa8e926d8d2"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -519,7 +536,51 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Note created successfully"
+                        "description": "Note created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 201
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Note created successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "019cf4d0-c324-7067-85dd-cfa8e926d8d2"
+                                                },
+                                                "note_title": {
+                                                    "type": "string",
+                                                    "example": "Judul Note"
+                                                },
+                                                "note_content": {
+                                                    "type": "string",
+                                                    "example": "Isi note disini"
+                                                },
+                                                "tags": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthenticated"
@@ -597,6 +658,13 @@
                                     "note_content": {
                                         "type": "string",
                                         "example": "Updated Content"
+                                    },
+                                    "tag_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "019cf4d0-c324-7067-85dd-cfa8e926d8d2"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -654,6 +722,183 @@
                     }
                 ]
             }
+        },
+        "/api/tags": {
+            "get": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Get semua tags milik user",
+                "operationId": "65f85cc85cd13d2454b6c88ffff5cc3a",
+                "responses": {
+                    "200": {
+                        "description": "Tag retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tag retrieved successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "example": "019cf4d0-c324-7067-85dd-cfa8e926d8d2"
+                                                    },
+                                                    "tag_name": {
+                                                        "type": "string",
+                                                        "example": "Laravel"
+                                                    },
+                                                    "created_by": {
+                                                        "type": "string",
+                                                        "example": "019cea71-d973-73d3-9c20-d2bea6a6826f"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Buat tag baru",
+                "operationId": "467bf3e5824fd78f9cdfb70c0ba9b172",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "tag_name"
+                                ],
+                                "properties": {
+                                    "tag_name": {
+                                        "type": "string",
+                                        "example": "Laravel"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Tag created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 201
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tag created successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "019cf4d0-c324-7067-85dd-cfa8e926d8d2"
+                                                },
+                                                "tag_name": {
+                                                    "type": "string",
+                                                    "example": "Laravel"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Tag already exists"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tags/{id}": {
+            "delete": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Hapus tag",
+                "operationId": "556f3044efa071c0209e19df24a54e3d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tag deleted successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -677,6 +922,10 @@
         {
             "name": "Notes",
             "description": "Notes"
+        },
+        {
+            "name": "Tags",
+            "description": "Tags"
         }
     ]
 }
