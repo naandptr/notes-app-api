@@ -19,14 +19,59 @@ class NoteController extends Controller
      *     tags={"Notes"},
      *     summary="Get semua notes milik user",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Notes retrieved successfully"),
+     *     * @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         required=false,
+     *         description="Cari notes berdasarkan judul atau konten",
+     *         @OA\Schema(type="string", example="laravel")
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         required=false,
+     *         description="Halaman yang ditampilkan",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         required=false,
+     *         description="Jumlah data per halaman (default: 10)",
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Notes retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="Note retrieved successfully"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
+     *             @OA\Property(property="meta", type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="total", type="integer", example=25),
+     *                 @OA\Property(property="last_page", type="integer", example=3)
+     *             )
+     *         )
+     *     ),
      *     @OA\Response(response=401, description="Unauthenticated")
      * )
      */
-    public function index()
+    public function index(Request $request)
     {
-        $notes = Note::where('created_by', auth()->id())->latest()->get();
-        return $this->retrieved($notes);
+        $notes = Note::where('created_by', auth()->id())
+            ->when($request->search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('note_title', 'like', "%{$search}%")
+                    ->orWhere('note_content', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate($request->get('per_page', 10));
+
+        return $this->paginated($notes);
     }
 
     /**

@@ -20,6 +20,22 @@ trait ApiResponse
         return $this->response(true, 200, $message, $data);
     }
 
+    protected function paginated($paginator)
+    {
+        return response()->json([
+            'success' => true,
+            'code'    => 200,
+            'message' => "{$this->resourceName} retrieved successfully",
+            'data'    => $paginator->items(),
+            'meta'    => [
+                'current_page' => $paginator->currentPage(),
+                'per_page'     => $paginator->perPage(),
+                'total'        => $paginator->total(),
+                'last_page'    => $paginator->lastPage(),
+            ],
+        ]);
+    }
+
     protected function created($data = null, string $message = null)
     {
         $message = $message ?? "{$this->resourceName} created successfully";
