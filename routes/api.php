@@ -118,6 +118,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::post('auth/refresh', [AuthController::class, 'refresh']);
+    Route::post('auth/change-password', [AuthController::class, 'changePassword']);
 
     Route::apiResource('notes', NoteController::class);
     Route::apiResource('tags', TagController::class);

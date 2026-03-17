@@ -42,9 +42,10 @@ trait ApiResponse
         return $this->response(true, 201, $message, $data);
     }
 
-    protected function updated($data = null)
+    protected function updated($data = null, string $message = null)
     {
-        return $this->response(true, 200, "{$this->resourceName} updated successfully", $data);
+        $message = $message ?? "{$this->resourceName} updated successfully";
+        return $this->response(true, 200, $message, $data);
     }
 
     protected function deleted()

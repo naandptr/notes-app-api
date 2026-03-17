@@ -236,6 +236,30 @@ class AuthController extends Controller
         return $this->badRequest(__($status));
     }
 
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'password'         => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = auth('api')->user();
+
+        if ($user->google_id && is_null($user->password)) {
+            return $this->forbidden('Google OAuth users cannot change password');
+        }
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return $this->unauthorized('Current password is incorrect');
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return $this->updated(null, 'Password changed successfully');
+    }
+
     /**
      * @OA\Post(
      *     path="/api/auth/logout",
