@@ -387,4 +387,4 @@ php artisan test --filter ForgotResetPasswordTest
 
 ---
 
-*made with 🎀 and a lot of ☕*
+*made with 💝 and a lot of ☕*
