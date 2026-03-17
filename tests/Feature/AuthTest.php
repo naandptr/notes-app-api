@@ -12,6 +12,12 @@ class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function authHeader(User $user): array
+    {
+        $token = auth('api')->login($user);
+        return ['Authorization' => 'Bearer ' . $token];
+    }
+
     #[Test]
     public function it_registers_a_new_user_successfully()
     {
@@ -141,6 +147,124 @@ class AuthTest extends TestCase
 
         $response->assertStatus(403)
             ->assertJsonPath('message', 'Please verify your email first');
+    }
+
+    #[Test]
+    public function it_changes_password_successfully()
+    {
+        $user = User::factory()->create([
+            'email'             => 'test@example.com',
+            'password'          => Hash::make('password123'),
+            'google_id'         => null,
+            'email_verified_at' => now(),
+        ]);
+
+        $response = $this->withHeaders($this->authHeader($user))
+            ->postJson('/api/auth/change-password', [
+                'current_password'      => 'password123',
+                'password'              => 'newpassword123',
+                'password_confirmation' => 'newpassword123',
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'Password changed successfully');
+
+        $this->assertTrue(Hash::check('newpassword123', $user->fresh()->password));
+    }
+
+    #[Test]
+    public function it_fails_change_password_with_wrong_current_password()
+    {
+        $user = User::factory()->create([
+            'email'             => 'test@example.com',
+            'password'          => Hash::make('password123'),
+            'google_id'         => null,
+            'email_verified_at' => now(),
+        ]);
+
+        $response = $this->withHeaders($this->authHeader($user))
+            ->postJson('/api/auth/change-password', [
+                'current_password'      => 'wrongpassword',
+                'password'              => 'newpassword123',
+                'password_confirmation' => 'newpassword123',
+            ]);
+
+        $response->assertStatus(401)
+            ->assertJsonPath('message', 'Current password is incorrect');
+    }
+
+    #[Test]
+    public function it_fails_change_password_with_mismatched_password()
+    {
+        $user = User::factory()->create([
+            'email'             => 'test@example.com',
+            'password'          => Hash::make('password123'),
+            'google_id'         => null,
+            'email_verified_at' => now(),
+        ]);
+
+        $response = $this->withHeaders($this->authHeader($user))
+            ->postJson('/api/auth/change-password', [
+                'current_password'      => 'password123',
+                'password'              => 'newpassword123',
+                'password_confirmation' => 'wrongpassword',
+            ]);
+
+        $response->assertStatus(422);
+    }
+
+    #[Test]
+    public function it_fails_change_password_for_google_oauth_user()
+    {
+        $user = User::factory()->create([
+            'email'             => 'test@gmail.com',
+            'password'          => null,
+            'google_id'         => '123456789',
+            'email_verified_at' => now(),
+        ]);
+
+        $response = $this->withHeaders($this->authHeader($user))
+            ->postJson('/api/auth/change-password', [
+                'current_password'      => 'somepassword',
+                'password'              => 'newpassword123',
+                'password_confirmation' => 'newpassword123',
+            ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('message', 'Google OAuth users cannot change password');
+    }
+
+    #[Test]
+    public function it_allows_change_password_for_user_with_both_google_and_password()
+    {
+        $user = User::factory()->create([
+            'email'             => 'test@example.com',
+            'password'          => Hash::make('password123'),
+            'google_id'         => '123456789',
+            'email_verified_at' => now(),
+        ]);
+
+        $response = $this->withHeaders($this->authHeader($user))
+            ->postJson('/api/auth/change-password', [
+                'current_password'      => 'password123',
+                'password'              => 'newpassword123',
+                'password_confirmation' => 'newpassword123',
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'Password changed successfully');
+    }
+
+    #[Test]
+    public function it_fails_change_password_without_token()
+    {
+        $response = $this->postJson('/api/auth/change-password', [
+            'current_password'      => 'password123',
+            'password'              => 'newpassword123',
+            'password_confirmation' => 'newpassword123',
+        ]);
+
+        $response->assertStatus(401);
     }
 
     #[Test]
