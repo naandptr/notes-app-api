@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\GoogleAuthController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\NoteController;
+use App\Http\Controllers\Api\TagController;
 use App\Models\User;
 
 Route::prefix('auth')->group(function () {
@@ -119,4 +120,5 @@ Route::middleware('auth:api')->group(function () {
     Route::post('auth/refresh', [AuthController::class, 'refresh']);
 
     Route::apiResource('notes', NoteController::class);
+    Route::apiResource('tags', TagController::class);
 });

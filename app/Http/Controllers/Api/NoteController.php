@@ -59,14 +59,20 @@ class NoteController extends Controller
      *     @OA\Response(response=401, description="Unauthenticated")
      * )
      */
+
+
     public function index(Request $request)
     {
         $notes = Note::where('created_by', auth()->id())
+            ->with('tags')
             ->when($request->search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('note_title', 'like', "%{$search}%")
                     ->orWhere('note_content', 'like', "%{$search}%");
                 });
+            })
+            ->when($request->tag_id, function ($query, $tagId) {
+                $query->whereHas('tags', fn($q) => $q->where('tags.id', $tagId));
             })
             ->latest()
             ->paginate($request->get('per_page', 10));
@@ -93,11 +99,14 @@ class NoteController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
+
     public function store(Request $request)
     {
         $request->validate([
             'note_title'   => 'required|string|max:255',
             'note_content' => 'required|string',
+            'tag_ids'      => 'nullable|array',
+            'tag_ids.*'    => 'uuid|exists:tags,id',
         ]);
 
         $note = Note::create([
@@ -106,7 +115,11 @@ class NoteController extends Controller
             'note_content' => $request->note_content,
         ]);
 
-        return $this->created($note);
+        if ($request->tag_ids) {
+            $note->tags()->attach($request->tag_ids);
+        }
+
+        return $this->created($note->load('tags'));
     }
 
     /**
@@ -126,13 +139,15 @@ class NoteController extends Controller
      *     @OA\Response(response=404, description="Not found")
      * )
      */
+
+
     public function show(Note $note)
     {
         if ($note->created_by !== auth()->id()) {
             return $this->forbidden();
         }
 
-        return $this->retrieved($note);
+        return $this->retrieved($note->load('tags'));
     }
 
     /**
@@ -167,11 +182,17 @@ class NoteController extends Controller
         $request->validate([
             'note_title'   => 'sometimes|string|max:255',
             'note_content' => 'sometimes|string',
+            'tag_ids'      => 'nullable|array',
+            'tag_ids.*'    => 'uuid|exists:tags,id',
         ]);
 
         $note->update($request->only(['note_title', 'note_content']));
 
-        return $this->updated($note);
+        if ($request->has('tag_ids')) {
+            $note->tags()->sync($request->tag_ids); // sync = replace all tag
+        }
+
+        return $this->updated($note->load('tags'));
     }
 
     /**

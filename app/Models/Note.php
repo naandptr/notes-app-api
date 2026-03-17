@@ -18,4 +18,9 @@ class Note extends Model
     {
         return $this->belongsTo(User::class, 'created_by', 'id');
     }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'note_tag');
+    }
 }
