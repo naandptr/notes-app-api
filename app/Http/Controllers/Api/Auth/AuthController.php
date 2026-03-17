@@ -259,7 +259,6 @@ class AuthController extends Controller
 
         return $this->updated(null, 'Password changed successfully');
     }
-
     /**
      * @OA\Post(
      *     path="/api/auth/logout",

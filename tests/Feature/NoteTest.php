@@ -64,6 +64,82 @@ class NoteTest extends TestCase
     }
 
     #[Test]
+    public function it_returns_paginated_notes()
+    {
+        $user = $this->createUser();
+        Note::factory()->count(15)->create(['created_by' => $user->id]);
+
+        $response = $this->withHeaders($this->authHeader($user))
+            ->getJson('/api/notes?page=1&per_page=5');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data',
+                'meta' => ['current_page', 'per_page', 'total', 'last_page'],
+            ])
+            ->assertJsonPath('meta.per_page', 5)
+            ->assertJsonPath('meta.total', 15)
+            ->assertJsonCount(5, 'data');
+    }
+
+    #[Test]
+    public function it_searches_notes_by_title()
+    {
+        $user = $this->createUser();
+        Note::factory()->create(['created_by' => $user->id, 'note_title' => 'Laravel Tips']);
+        Note::factory()->create(['created_by' => $user->id, 'note_title' => 'Vue JS Guide']);
+
+        $response = $this->withHeaders($this->authHeader($user))
+            ->getJson('/api/notes?search=laravel');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data');
+    }
+
+    #[Test]
+    public function it_searches_notes_by_content()
+    {
+        $user = $this->createUser();
+        Note::factory()->create(['created_by' => $user->id, 'note_content' => 'This is about Laravel Eloquent']);
+        Note::factory()->create(['created_by' => $user->id, 'note_content' => 'This is about Vue JS']);
+
+        $response = $this->withHeaders($this->authHeader($user))
+            ->getJson('/api/notes?search=eloquent');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data');
+    }
+
+    #[Test]
+    public function it_returns_empty_when_search_not_found()
+    {
+        $user = $this->createUser();
+        Note::factory()->count(3)->create(['created_by' => $user->id]);
+
+        $response = $this->withHeaders($this->authHeader($user))
+            ->getJson('/api/notes?search=xyznotfound');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(0, 'data');
+    }
+
+    #[Test]
+    public function it_filters_notes_by_tag()
+    {
+        $user  = $this->createUser();
+        $tag   = \App\Models\Tag::factory()->create(['created_by' => $user->id]);
+        $note1 = Note::factory()->create(['created_by' => $user->id]);
+        $note2 = Note::factory()->create(['created_by' => $user->id]);
+        $note1->tags()->attach($tag->id);
+
+        $response = $this->withHeaders($this->authHeader($user))
+            ->getJson('/api/notes?tag_id=' . $tag->id);
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data');
+    }
+
+    #[Test]
     public function it_creates_a_note_successfully()
     {
         $user = $this->createUser();
