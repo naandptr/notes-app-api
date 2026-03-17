@@ -236,6 +236,36 @@ class AuthController extends Controller
         return $this->badRequest(__($status));
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/auth/change-password",
+     *     tags={"Auth"},
+     *     summary="Ganti password",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"current_password","password","password_confirmation"},
+     *             @OA\Property(property="current_password", type="string", example="password123"),
+     *             @OA\Property(property="password", type="string", example="newpassword123"),
+     *             @OA\Property(property="password_confirmation", type="string", example="newpassword123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Password changed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="Password changed successfully"),
+     *             @OA\Property(property="data", type="null")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Current password is incorrect"),
+     *     @OA\Response(response=403, description="Google OAuth users cannot change password"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function changePassword(Request $request)
     {
         $request->validate([
