@@ -1,80 +1,78 @@
-# 🎀 notes app api 🎀
+# 🎀 Notes App API 🎀
 
-> *a cute little restful api for managing your personal notes, built with love using laravel 12* ✨
-
----
-
-## 🌸 features
-
-- 🔐 google oauth 2.0 login & register
-- 💌 manual register & login with email verification
-- 🔑 forgot & reset password via email
-- 🔒 change password
-- 🎟️ jwt authentication
-- 📓 full crud for personal notes
-- 🏷️ tagging system (per user, many-to-many)
-- 🔍 search notes by title or content
-- 📄 pagination with configurable page size
-- 🆔 uuid primary keys
-- 💅 standardized json responses
-- 🧪 feature tests with phpunit
+> RESTful API for managing personal notes with authentication, tagging, and search functionality. Built using Laravel 12.
 
 ---
 
-## 🩰 tech stack
+## 🌸 Features
+
+- Authentication (JWT)
+- Google OAuth 2.0 login (Laravel Socialite)
+- Email verification & password reset
+- Full CRUD for notes
+- Tagging system (many-to-many per user)
+- Search notes (title & content)
+- Pagination with configurable page size
+- UUID as primary keys
+- Standardized JSON responses
+- Feature testing with PHPUnit
+
+---
+
+## 🩰 Tech Stack
 
 | | |
 |---|---|
-| **framework** | laravel 12 |
-| **auth** | jwt (tymon/jwt-auth) + google oauth (laravel/socialite) |
-| **database** | mysql |
-| **testing** | phpunit |
+| **Framework** | Laravel 12 |
+| **Auth** | JWT + Google OAuth |
+| **Database** | MySQL |
+| **Testing** | PHPUnit |
 
 ---
 
-## 🎀 requirements
+## 🎀 Requirements
 
-- php >= 8.2
-- composer
-- mysql
-- google oauth credentials
+- PHP >= 8.2
+- Composer
+- MySQL
+- Google OAuth Credentials
 
 ---
 
-## 🌷 installation & setup
+## 🌷 Installation & Setup
 
-### 1. clone repository
+### 1. Clone repository
 
 ```bash
 git clone https://github.com/naandptr/notes-app-api.git
 cd notes-app-api
 ```
 
-### 2. install dependencies
+### 2. Install dependencies
 
 ```bash
 composer install
 ```
 
-### 3. copy environment file
+### 3. Copy environment file
 
 ```bash
 cp .env.example .env
 ```
 
-### 4. generate app key
+### 4. Generate app key
 
 ```bash
 php artisan key:generate
 ```
 
-### 5. generate jwt secret
+### 5. Generate JWT secret
 
 ```bash
 php artisan jwt:secret
 ```
 
-### 6. configure `.env` 🌸
+### 6. Configure `.env` 
 
 ```env
 APP_NAME="Notes App"
@@ -101,13 +99,13 @@ MAIL_FROM_ADDRESS=noreply@notesapp.com
 MAIL_FROM_NAME="Notes App"
 ```
 
-### 7. run migrations
+### 7. Run migrations
 
 ```bash
 php artisan migrate
 ```
 
-### 8. start server 🎀
+### 8. Start server 
 
 ```bash
 php artisan serve
@@ -115,70 +113,70 @@ php artisan serve
 
 ---
 
-## 🌹 google oauth setup
+## 🌹 Google OAuth Setup
 
-1. go to [console.cloud.google.com](https://console.cloud.google.com) 🌐
-2. create a new project 🆕
-3. enable **google people api** ✅
-4. go to **apis & services** → **oauth consent screen** → configure 🛠️
-5. go to **credentials** → **create credentials** → **oauth 2.0 client ids** 🔑
-6. set **authorized redirect uris** to `http://localhost:8000/api/auth/google/callback`
-7. copy **client id** and **client secret** to `.env` 💌
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) 
+2. Create a new project 
+3. Enable **google people api** 
+4. Go to **apis & services** → **oauth consent screen** → configure 
+5. Go to **credentials** → **create credentials** → **oauth 2.0 client ids** 🔑
+6. Set **authorized redirect uris** to `http://localhost:8000/api/auth/google/callback`
+7. Copy **client id** and **client secret** to `.env` 
 
 ---
 
-## 🎀 api endpoints
+## 🎀 API Endpoints
 
-### 🔐 auth
+### Auth
 
-| method | endpoint | description | auth |
+| Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/api/auth/google/redirect` | get google oauth redirect url | ✗ |
-| `GET` | `/api/auth/google/callback` | handle google oauth callback | ✗ |
-| `POST` | `/api/auth/register` | register with email & password | ✗ |
-| `POST` | `/api/auth/login` | login with email & password | ✗ |
-| `POST` | `/api/auth/logout` | logout | ✓ |
-| `POST` | `/api/auth/refresh` | refresh jwt token | ✓ |
-| `POST` | `/api/auth/change-password` | change password | ✓ |
-| `POST` | `/api/auth/forgot-password` | send password reset link | ✗ |
-| `POST` | `/api/auth/reset-password` | reset password with token | ✗ |
-| `GET` | `/api/auth/verify-email/{id}/{hash}` | verify email address | ✗ |
-| `POST` | `/api/auth/resend-verification` | resend verification email | ✗ |
+| `GET` | `/api/auth/google/redirect` | Get google oauth redirect url | ✗ |
+| `GET` | `/api/auth/google/callback` | Handle google oauth callback | ✗ |
+| `POST` | `/api/auth/register` | Register with email & password | ✗ |
+| `POST` | `/api/auth/login` | Login with email & password | ✗ |
+| `POST` | `/api/auth/logout` | Logout | ✓ |
+| `POST` | `/api/auth/refresh` | Refresh jwt token | ✓ |
+| `POST` | `/api/auth/change-password` | Change password | ✓ |
+| `POST` | `/api/auth/forgot-password` | Send password reset link | ✗ |
+| `POST` | `/api/auth/reset-password` | Reset password with token | ✗ |
+| `GET` | `/api/auth/verify-email/{id}/{hash}` | Verify email address | ✗ |
+| `POST` | `/api/auth/resend-verification` | Resend verification email | ✗ |
 
-> ⚠️ change password is not available for google oauth users without a password
+> ⚠️ Change password is not available for google oauth users without a password
 
-### 📓 notes
+### Notes
 
-| method | endpoint | description | auth |
+| Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/api/notes` | get all notes | ✓ |
-| `POST` | `/api/notes` | create a new note | ✓ |
-| `GET` | `/api/notes/{id}` | get a single note | ✓ |
-| `PUT/PATCH` | `/api/notes/{id}` | update a note | ✓ |
-| `DELETE` | `/api/notes/{id}` | delete a note | ✓ |
+| `GET` | `/api/notes` | Get all notes | ✓ |
+| `POST` | `/api/notes` | Create a new note | ✓ |
+| `GET` | `/api/notes/{id}` | Get a single note | ✓ |
+| `PUT/PATCH` | `/api/notes/{id}` | Update a note | ✓ |
+| `DELETE` | `/api/notes/{id}` | Delete a note | ✓ |
 
-#### 🔍 query parameters
+#### Query parameters
 
-| parameter | type | description | example |
+| Parameter | Type | Description | Example |
 |-----------|------|-------------|---------|
-| `page` | integer | page number | `?page=1` |
-| `per_page` | integer | items per page (default: 10) | `?per_page=5` |
-| `search` | string | search by title or content | `?search=laravel` |
-| `tag_id` | uuid | filter by tag | `?tag_id=019cf4d0-...` |
+| `page` | integer | Page number | `?page=1` |
+| `per_page` | integer | Items per page (default: 10) | `?per_page=5` |
+| `search` | string | Search by title or content | `?search=laravel` |
+| `tag_id` | uuid | Filter by tag | `?tag_id=019cf4d0-...` |
 
-### 🏷️ tags
+### Tags
 
-| method | endpoint | description | auth |
+| Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/api/tags` | get all tags | ✓ |
-| `POST` | `/api/tags` | create a new tag | ✓ |
-| `DELETE` | `/api/tags/{id}` | delete a tag | ✓ |
+| `GET` | `/api/tags` | Get all tags | ✓ |
+| `POST` | `/api/tags` | Create a new tag | ✓ |
+| `DELETE` | `/api/tags/{id}` | Delete a tag | ✓ |
 
 ---
 
-## 💅 request & response examples
+## 💅 Request & Response Examples
 
-### register 🌸
+### Register 
 ```http
 POST /api/auth/register
 Content-Type: application/json
@@ -200,7 +198,7 @@ Content-Type: application/json
 }
 ```
 
-### login 🔑
+### Login 
 ```http
 POST /api/auth/login
 Content-Type: application/json
@@ -229,7 +227,7 @@ Content-Type: application/json
 }
 ```
 
-### change password 🔒
+### Change password 
 ```http
 POST /api/auth/change-password
 Authorization: Bearer {token}
@@ -251,7 +249,7 @@ Content-Type: application/json
 }
 ```
 
-### create tag 🏷️
+### Create tag 
 ```http
 POST /api/tags
 Authorization: Bearer {token}
@@ -275,7 +273,7 @@ Content-Type: application/json
 }
 ```
 
-### create note 📓
+### Create note 
 ```http
 POST /api/notes
 Authorization: Bearer {token}
@@ -310,7 +308,7 @@ Content-Type: application/json
 }
 ```
 
-### get notes 🔍
+### Get notes 
 ```http
 GET /api/notes?page=1&per_page=10&search=laravel&tag_id=019cf4d0-...
 Authorization: Bearer {token}
@@ -331,7 +329,7 @@ Authorization: Bearer {token}
 }
 ```
 
-### update note ✏️
+### Update note 
 ```http
 PUT /api/notes/{id}
 Authorization: Bearer {token}
@@ -346,9 +344,9 @@ Content-Type: application/json
 
 ---
 
-## 🚨 standard error responses
+## 🚨 Standard Error Responses
 
-| code | message | description |
+| Code | Message | Description |
 |------|---------|-------------|
 | `400` | Bad Request | invalid request parameters |
 | `401` | Unauthenticated | missing or invalid token |
@@ -359,10 +357,10 @@ Content-Type: application/json
 
 ---
 
-## 🧪 running tests
+## 🧪 Running Tests
 
 ```bash
-# run all tests 🎀
+# run all tests 
 php artisan test
 
 # run specific test file
@@ -374,17 +372,17 @@ php artisan test --filter EmailVerificationTest
 php artisan test --filter ForgotResetPasswordTest
 ```
 
-### 🌸 test coverage
+### Test coverage
 
-| test file | coverage |
+| Test File | Coverage |
 |-----------|----------|
-| `GoogleAuthTest` | google oauth register, login, update google_id, auth failure |
-| `AuthTest` | register, login, logout, change password (manual) |
-| `NoteTest` | crud notes, search, pagination, filter by tag, authorization checks |
-| `TagTest` | crud tags, tag & note relation, authorization checks |
-| `EmailVerificationTest` | verify email, resend verification |
-| `ForgotResetPasswordTest` | forgot password, reset password |
+| `GoogleAuthTest` | Google OAuth register, login, update google_id, auth failure |
+| `AuthTest` | Register, login, logout, change password (manual) |
+| `NoteTest` | CRUD notes, search, pagination, filter by tag, authorization checks |
+| `TagTest` | CRUD tags, tag & note relation, authorization checks |
+| `EmailVerificationTest` | Verify email, resend verification |
+| `ForgotResetPasswordTest` | Forgot password, reset password |
 
 ---
 
-*made with 💝 and a lot of ☕*
+*This project focuses on building a clean and scalable backend structure, including authentication, relational data handling, and API design.*
