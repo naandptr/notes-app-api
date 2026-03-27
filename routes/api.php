@@ -95,22 +95,6 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-if (app()->environment('local')) {
-    Route::get('/auth/test-token/{index?}', function ($index = 0) {
-        $user = \App\Models\User::offset($index)->first();
-        
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User not found at index ' . $index,
-            ], 404);
-        }
-
-        $token = auth('api')->login($user);
-        return response()->json(['token' => $token]);
-    });
-}
-
 Route::middleware('auth:api')->group(function () {
     Route::get('/user', function () {
         return response()->json(auth('api')->user());
