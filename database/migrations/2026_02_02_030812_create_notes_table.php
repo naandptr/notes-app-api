@@ -11,15 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('notes', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password')->nullable(); 
-            $table->string('google_id')->nullable()->unique();
-            $table->string('avatar')->nullable();
+            $table->foreignUuid('created_by')->constrained('users')->cascadeOnDelete();
+            $table->string('note_title');
+            $table->text('note_content');
             $table->timestamps();
-        });        
+        });
     }
 
     /**
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');    
+        Schema::dropIfExists('notes');
     }
 };

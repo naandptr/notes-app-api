@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('tags', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password')->nullable(); 
-            $table->string('google_id')->nullable()->unique();
-            $table->string('avatar')->nullable();
+            $table->foreignUuid('created_by')->constrained('users')->cascadeOnDelete();
+            $table->string('tag_name');
             $table->timestamps();
-        });        
+
+            $table->unique(['created_by', 'tag_name']);
+        });
     }
 
     /**
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');    
+        Schema::dropIfExists('tags');
     }
 };
